@@ -2,6 +2,7 @@ package main
 
 import (
 	"bullion-pulumi/databases"
+	"bullion-pulumi/kubernetes"
 	"bullion-pulumi/network"
 
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
@@ -24,19 +25,19 @@ func main() {
 		}
 
 		// Create mongodb cluster
-		results, err := databases.Mongo(ctx, result.Vpc.ID(), result.Subnetwork.ID())
+		_, err = databases.MongoSingle(ctx, result.Vpc.ID(), result.Subnetwork.ID())
 		if err != nil {
 			return err
 
 		}
 
-		// Export the ids instances name of the bucket
-		for _, data := range results.Master {
-			ctx.Export("instances id created :", data.InstanceId)
+		// create Kubernetes
+		_, err = kubernetes.Create(ctx, "bullion-created-by-pulumi", result.Vpc.Name)
+		if err != nil {
+			return err
+
 		}
 
-		// Export the vpc id
-		ctx.Export("vpc-id", result.Vpc.ID())
 		return nil
 	})
 }

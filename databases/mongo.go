@@ -24,7 +24,7 @@ type ComputeDetailes struct {
 	Tags                  string
 }
 
-func Mongo(ctx *pulumi.Context, vpc pulumi.IDOutput, subnetwork pulumi.IDOutput) (Result, error) {
+func MongosCluster(ctx *pulumi.Context, vpc pulumi.IDOutput, subnetwork pulumi.IDOutput) (Result, error) {
 	baseConfig := &config.Configuration{}
 	config.GetConfig(baseConfig)
 
@@ -84,4 +84,40 @@ func Mongo(ctx *pulumi.Context, vpc pulumi.IDOutput, subnetwork pulumi.IDOutput)
 	}
 
 	return results, nil
+}
+
+func MongoSingle(ctx *pulumi.Context, vpc pulumi.IDOutput, subnetwork pulumi.IDOutput) (*compute.Instance, error) {
+	baseConfig := &config.Configuration{}
+	config.GetConfig(baseConfig)
+
+	computeDetail := ComputeDetailes{
+		Name:                  "mongo-master",
+		MachineType:           "e2-medium",
+		VpcId:                 vpc,
+		Subnetwork:            subnetwork,
+		Zone:                  baseConfig.Compute.Zone,
+		Os:                    "debian-cloud/debian-10",
+		MetadataStartupScript: "gsutil cp gs://decentralize-config/mongodb-installation.sh . && bash mongodb-installation.sh && sudo systemctl start mongod && sudo systemctl enable mongod",
+		Size:                  20,
+		Tags:                  "mongo-master",
+	}
+
+	result, err := computes.Create(
+		ctx,
+		computeDetail.Name,
+		computeDetail.MachineType,
+		computeDetail.VpcId,
+		computeDetail.Subnetwork,
+		computeDetail.Zone,
+		computeDetail.Os,
+		computeDetail.MetadataStartupScript,
+		computeDetail.Size, computeDetail.Tags,
+	)
+
+	if err != nil {
+		return &compute.Instance{}, err
+
+	}
+
+	return result, nil
 }
