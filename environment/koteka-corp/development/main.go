@@ -32,7 +32,16 @@ func main() {
 		}
 
 		// create Kubernetes
-		_, err = kubernetes.Create(ctx, "bullion-created-by-pulumi", result.Vpc.Name)
+		nodePoolsDetails := []kubernetes.NodePoolDetails{
+			kubernetes.NodePoolDetails{
+				NodePoolName: "pool-1",
+				Location:     "asia-southeast1",
+				MachineType:  "e2-small",
+				NodeCount:    3,
+			},
+		}
+
+		_, err = kubernetes.CreateGKE(ctx, "development", result.Vpc.Name, result.Subnetwork.Name, nodePoolsDetails)
 		if err != nil {
 			return err
 

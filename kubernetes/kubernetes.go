@@ -19,7 +19,7 @@ type KubernetesResults struct {
 	NodePools []*container.NodePool
 }
 
-func Create(ctx *pulumi.Context, kubename string, network pulumi.StringInput) (KubernetesResults, error) {
+func CreateGKE(ctx *pulumi.Context, kubename string, network pulumi.StringInput, subnetwork pulumi.StringInput, nodePooldetails []NodePoolDetails) (KubernetesResults, error) {
 	var kubernetesResults KubernetesResults
 	baseConfig := &config.Configuration{}
 	config.GetConfig(baseConfig)
@@ -29,20 +29,15 @@ func Create(ctx *pulumi.Context, kubename string, network pulumi.StringInput) (K
 		RemoveDefaultNodePool: pulumi.Bool(true),
 		InitialNodeCount:      pulumi.Int(1),
 		Network:               network,
+		Subnetwork:            subnetwork,
 	})
 	if err != nil {
 		return kubernetesResults, err
 	}
 
-	for _, nodePool := range []NodePoolDetails{
-		NodePoolDetails{
-			NodePoolName: "node-1",
-			ClusterName:  primary.Name,
-			Location:     baseConfig.Compute.Zone,
-			MachineType:  "e2-small",
-			NodeCount:    1,
-		},
-	} {
+	for _, nodePool := range nodePooldetails {
+		nodePool.ClusterName = primary.Name
+
 		result, err := CreateNodePool(ctx, nodePool.NodePoolName, nodePool.ClusterName, nodePool.Location, nodePool.MachineType, nodePool.NodeCount)
 		if err != nil {
 			return kubernetesResults, err
