@@ -16,6 +16,7 @@ func Create(
 	script string,
 	size int,
 	tags string,
+	dependsOn ...[]pulumi.Resource,
 ) (
 	*compute.Instance,
 	error,
@@ -46,7 +47,7 @@ func Create(
 		Metadata: pulumi.StringMap{
 			"foo": pulumi.String("bar"),
 		},
-	})
+	}, pulumi.DependsOn(dependsOn[0]))
 	if err != nil {
 		return result, err
 	}

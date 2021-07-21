@@ -11,6 +11,8 @@ type Configuration struct {
 	Vpc        vpc
 	Subnetwork subnetwork
 	Compute    compute
+	Firewall   firewall
+	Kubernetes kubernetes
 }
 
 type vpc struct {
@@ -25,6 +27,14 @@ type subnetwork struct {
 
 type compute struct {
 	Zone string
+}
+
+type firewall struct {
+	Range1 string
+}
+
+type kubernetes struct {
+	Ip4cidr string
 }
 
 func GetConfig(baseConfig *Configuration) {

@@ -5,7 +5,7 @@ import (
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
 )
 
-func CreateNodePool(ctx *pulumi.Context, NodePoolName string, clusterName pulumi.StringOutput, location string, machineType string, nodeCount int) (*container.NodePool, error) {
+func CreateNodePool(ctx *pulumi.Context, NodePoolName string, clusterName pulumi.StringOutput, location string, machineType string, nodeCount int, dependsOn ...[]pulumi.Resource) (*container.NodePool, error) {
 	nodePool, err := container.NewNodePool(ctx, NodePoolName, &container.NodePoolArgs{
 		Location:  pulumi.String(location),
 		Cluster:   clusterName,
@@ -17,7 +17,7 @@ func CreateNodePool(ctx *pulumi.Context, NodePoolName string, clusterName pulumi
 				pulumi.String("https://www.googleapis.com/auth/cloud-platform"),
 			},
 		},
-	})
+	}, pulumi.DependsOn(dependsOn[0]))
 	if err != nil {
 		return &container.NodePool{}, err
 	}

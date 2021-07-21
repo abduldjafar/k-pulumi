@@ -1,4 +1,4 @@
-module bullion-pulumi
+module k-pulumi
 
 go 1.14
 
