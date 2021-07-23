@@ -1,0 +1,22 @@
+{
+    "kubernetes":[
+        {
+            "poolname":"pool1",
+            "nodecount":1,
+            "machinetype":"e2-medium",
+            "location":"asia-southeast1"
+        },
+        {
+            "poolname":"pool2",
+            "nodecount":1,
+            "machinetype":"e2-medium",
+            "location":"asia-southeast1"
+        },
+        {
+            "poolname":"pool3",
+            "nodecount":1,
+            "machinetype":"e2-medium",
+            "location":"asia-southeast1"
+        }
+    ]
+}

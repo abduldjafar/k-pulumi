@@ -26,7 +26,8 @@ type subnetwork struct {
 }
 
 type compute struct {
-	Zone string
+	Zone        string
+	MachineType string
 }
 
 type firewall struct {
@@ -42,4 +43,13 @@ func GetConfig(baseConfig *Configuration) {
 	if _, err := toml.DecodeFile(basePath+"/config.toml", &baseConfig); err != nil {
 		fmt.Println(err)
 	}
+}
+
+func GetConfigs(baseConfig *Configuration) *Configuration {
+	basePath, _ := os.Getwd()
+	if _, err := toml.DecodeFile(basePath+"/config.toml", &baseConfig); err != nil {
+		fmt.Println(err)
+	}
+
+	return baseConfig
 }

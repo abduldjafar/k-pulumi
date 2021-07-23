@@ -1,7 +1,7 @@
 package network
 
 import (
-	"k-pulumi/config"
+	"bullion-pulumi/config"
 
 	"github.com/pulumi/pulumi-gcp/sdk/v5/go/gcp/compute"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
@@ -12,6 +12,8 @@ type DataResult struct {
 	Subnetwork *compute.Subnetwork
 	Router     *compute.Router
 	Nat        *compute.RouterNat
+	Firewall   []*compute.Firewall
+	Resource   []pulumi.Resource
 }
 
 func Create(name string, ctx *pulumi.Context) (DataResult, error) {
@@ -49,10 +51,26 @@ func Create(name string, ctx *pulumi.Context) (DataResult, error) {
 		return DataResult{}, err
 	}
 
+	// Create ssh access
+	sshAccess, err := SSHAccess(ctx, "ssh-access", vpc.Name, "0.0.0.0/0")
+	if err != nil {
+		return DataResult{}, err
+
+	}
+
+	// create mongo access
+	mongoAccess, err := MongoAccess(ctx, "mongo-access", vpc.Name, "0.0.0.0/0")
+	if err != nil {
+		return DataResult{}, err
+
+	}
+
 	result.Vpc = vpc
 	result.Subnetwork = subnetwork
 	result.Router = router
 	result.Nat = nat
+	result.Firewall = append(result.Firewall, mongoAccess, sshAccess)
+	result.Resource = append(result.Resource, vpc, subnetwork, router, nat, mongoAccess, sshAccess)
 
 	return result, nil
 

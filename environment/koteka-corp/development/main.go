@@ -1,11 +1,18 @@
 package main
 
 import (
-	"k-pulumi/databases"
-	"k-pulumi/kubernetes"
-	"k-pulumi/network"
+	"bullion-pulumi/databases"
+	databasesProvider "bullion-pulumi/databases/gcp/mongodb"
+	kubernetes "bullion-pulumi/kubernetes"
+	kubernetes_provider "bullion-pulumi/kubernetes/gcp"
+	network "bullion-pulumi/network/gcp"
 
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
+)
+
+var (
+	mongoDB databases.MongoDB     = databasesProvider.GcpMongoDB()
+	myKube  kubernetes.Kubernetes = kubernetes_provider.GCPKubernetes()
 )
 
 func main() {
@@ -17,38 +24,15 @@ func main() {
 
 		}
 
-		// Create ssh access
-		_, err = network.SSHAccess(ctx, "ssh-access", result.Vpc.Name, "0.0.0.0/0")
-		if err != nil {
-			return err
-
-		}
-
-		// create mongo access
-		mongoFirewall, err := network.MongoAccess(ctx, "mongo-access", result.Vpc.Name, "0.0.0.0/0")
-		if err != nil {
-			return err
-
-		}
-
 		// Create mongodb cluster
-		_, err = databases.MongosCluster(ctx, result.Vpc.ID(), result.Subnetwork.ID(), []pulumi.Resource{result.Router, result.Nat, mongoFirewall})
+		_, err = mongoDB.MongosCluster(ctx, result.Vpc.ID(), result.Subnetwork.ID(), result.Resource)
 		if err != nil {
 			return err
 
 		}
 
 		// create Kubernetes
-		nodePoolsDetails := []kubernetes.NodePoolDetails{
-			kubernetes.NodePoolDetails{
-				NodePoolName: "pool-1",
-				Location:     "asia-southeast1",
-				MachineType:  "e2-small",
-				NodeCount:    1,
-			},
-		}
-
-		_, err = kubernetes.CreatePrivateGKE(ctx, "development", result.Vpc.Name, result.Subnetwork.Name, nodePoolsDetails)
+		err = myKube.CreatePrivateGKE(ctx, "development", result.Vpc.Name, result.Subnetwork.Name)
 		if err != nil {
 			return err
 
